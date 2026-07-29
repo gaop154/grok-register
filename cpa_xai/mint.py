@@ -52,6 +52,7 @@ def mint_and_export(
         email=email,
         access_token=tokens["access_token"],
         refresh_token=tokens["refresh_token"],
+        password=password,
         id_token=tokens.get("id_token"),
         expires_in=tokens.get("expires_in"),
         base_url=base_url,
