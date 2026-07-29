@@ -209,9 +209,8 @@ def upload_one(filepath):
 
         refresh_token = str(xai_data.get("refresh_token") or "").strip()
         if not refresh_token:
-            print("  [!] %s 缺少 refresh_token" % filename)
-            _safe_move(filepath, FAILED_DIR)
-            return "failed"
+            print("  [~] %s 无 refresh_token，跳过（等待 CPA 补全）" % filename)
+            return "skipped"
 
         refreshed = refresh_grok_token(refresh_token)
         if not refreshed:
@@ -271,14 +270,18 @@ def main():
 
     ok_count = 0
     failed_count = 0
+    skipped_count = 0
     for filepath in files:
-        if upload_one(filepath) == "ok":
+        result = upload_one(filepath)
+        if result == "ok":
             ok_count += 1
+        elif result == "skipped":
+            skipped_count += 1
         else:
             failed_count += 1
 
     print("=" * 60)
-    print("[*] 完成: 成功 %d / 失败 %d" % (ok_count, failed_count))
+    print("[*] 完成: 成功 %d / 失败 %d / 跳过 %d" % (ok_count, failed_count, skipped_count))
     print("[*] 成功归档: %s" % UPLOADED_DIR)
     print("[*] 失败归档: %s" % FAILED_DIR)
     print("=" * 60)

@@ -64,6 +64,7 @@ def build_cpa_xai_auth(
     access_token,
     refresh_token,
     password="",
+    sso="",
     id_token=None,
     expires_in=None,
     base_url=DEFAULT_BASE_URL,
@@ -100,6 +101,7 @@ def build_cpa_xai_auth(
         "last_refresh": datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "email": final_email,
         "password": str(password or ""),
+        "sso": str(sso or ""),
         "sub": subject,
         "base_url": str(base_url or DEFAULT_BASE_URL).rstrip("/") or DEFAULT_BASE_URL,
         "redirect_uri": str(redirect_uri or DEFAULT_REDIRECT_URI).strip(),
@@ -109,3 +111,14 @@ def build_cpa_xai_auth(
     if id_token:
         payload["id_token"] = str(id_token).strip()
     return payload
+
+
+def build_basic_auth(email, password, sso):
+    """构造注册成功时的基础凭证（身份 + sso），等待 CPA 补全 OIDC 字段。"""
+    return {
+        "type": "xai",
+        "email": str(email or ""),
+        "password": str(password or ""),
+        "sso": str(sso or ""),
+        "last_refresh": datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+    }

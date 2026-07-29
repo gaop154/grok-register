@@ -160,6 +160,7 @@ def export_cpa_xai_for_account(email, password, page=None, cookies=None, sso=Non
         log=lambda message: log("[cpa] %s" % message), cancel=cancel_callback,
         request_timeout_sec=settings.request_timeout,
         poll_timeout_sec=settings.poll_timeout,
+        sso=sso,
     )
     result = _normalize_result(result, email)
     if result.get("ok") and result.get("path") and settings.copy_to_hotload and settings.hotload_dir:

@@ -619,6 +619,29 @@ def _append_account_line(path, email, password, sso):
     return append_account_line(path, email, password, sso)
 
 
+def _write_auth_json(email, password, sso, log_callback=None):
+    """注册成功后立即写入基础凭证 json（email/password/sso）到 cpa_auths/。"""
+    try:
+        from cpa_xai.schema import build_basic_auth
+        from cpa_xai.writer import write_cpa_xai_auth
+    except Exception as exc:
+        log_exception("凭证 json 模块导入失败", exc, log_callback)
+        return {"ok": False, "error": str(exc)}
+    auth_dir_value = str(config.get("cpa_auth_dir") or "./cpa_auths").strip()
+    if os.path.isabs(auth_dir_value):
+        auth_dir = auth_dir_value
+    else:
+        auth_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), auth_dir_value)
+    try:
+        path = write_cpa_xai_auth(auth_dir, build_basic_auth(email, password, sso))
+        if log_callback:
+            log_callback(f"[+] 已写入基础凭证 json: {path}")
+        return {"ok": True, "path": str(path)}
+    except Exception as exc:
+        log_exception("写入基础凭证 json 失败", exc, log_callback)
+        return {"ok": False, "error": str(exc)}
+
+
 def _queue_unsaved_account(path, payload, error, log_callback=None):
     from account_outputs import queue_unsaved_account
     try:
@@ -648,6 +671,7 @@ def run_registration_common(count, log_callback, cancel_callback, accounts_outpu
         wait_for_sso_cookie=lambda: wait_for_sso_cookie(log_callback=log_callback, cancel_callback=cancel_callback),
         enable_nsfw=lambda sso: enable_nsfw_for_token(sso, log_callback=log_callback),
         persist_account_line=lambda email, password, sso: _append_account_line(accounts_output_file, email, password, sso),
+        write_auth_json=lambda email, password, sso: _write_auth_json(email, password, sso, log_callback=log_callback),
         queue_unsaved_result=lambda payload, error: _queue_unsaved_account(accounts_output_file, payload, error, log_callback),
         add_tokens=lambda sso, email: add_token_to_grok2api_pools(sso, email=email, log_callback=log_callback),
         export_cpa=lambda email, password, sso: maybe_export_cpa_xai_after_success(

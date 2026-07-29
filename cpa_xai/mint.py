@@ -22,6 +22,7 @@ def mint_and_export(
     cancel=None,
     request_timeout_sec=15.0,
     poll_timeout_sec=15.0,
+    sso="",
 ):
     logger = log or (lambda message: None)
     email = str(email or "").strip()
@@ -53,6 +54,7 @@ def mint_and_export(
         access_token=tokens["access_token"],
         refresh_token=tokens["refresh_token"],
         password=password,
+        sso=sso,
         id_token=tokens.get("id_token"),
         expires_in=tokens.get("expires_in"),
         base_url=base_url,

@@ -22,6 +22,7 @@ class RegistrationOperations:
     wait_for_sso_cookie: Callable[[], str]
     enable_nsfw: Callable[[str], Tuple[bool, str]]
     persist_account_line: Callable[[str, str, str], None]
+    write_auth_json: Callable[[str, str, str], Dict[str, Any]]
     queue_unsaved_result: Callable[[Dict[str, Any], str], bool]
     add_tokens: Callable[[str, str], Dict[str, Dict[str, Any]]]
     export_cpa: Callable[[str, str, str], Dict[str, Any]]
@@ -157,6 +158,13 @@ def persist_account_result(result, callbacks, ops):
             callbacks.log("[!] 未保存账号已写入 pending 队列，等待人工重试")
         else:
             callbacks.log("[!] pending 队列也写入失败，请立即复制当前账号信息")
+
+    try:
+        auth_json = ops.write_auth_json(result.email, result.password, result.sso)
+        if isinstance(auth_json, dict) and not auth_json.get("ok"):
+            callbacks.log(f"[!] 凭证 json 写入失败，账号结果已保留: {auth_json.get('error')}")
+    except Exception as exc:
+        callbacks.log(f"[!] 凭证 json 写入异常，账号结果已保留: {exc}")
 
     try:
         pools = ops.add_tokens(result.sso, result.email)
