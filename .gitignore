@@ -28,3 +28,6 @@ screenshots/
 
 *.pending.jsonl
 *.pending.jsonl.lock
+
+# Claude Code local-only（个人权限授权，不入库）
+.claude/settings.local.json
